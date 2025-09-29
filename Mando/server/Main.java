@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.BindException;
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -43,7 +44,7 @@ public class Main implements ActionListener{
 	 * @param s2 cadena de texto 2 para mostrar en el menu pop up
 	 */
 	public static void notificacion(String s1, String s2) {
-		Image img = Toolkit.getDefaultToolkit().getImage("Resources/logoNotificacion.png");
+		Image img = Toolkit.getDefaultToolkit().getImage("Resources/test.png");
 		PopupMenu pm = crearMenu();
 		
 		TrayIcon icono = new TrayIcon(img, s2, pm);
@@ -85,6 +86,39 @@ public class Main implements ActionListener{
 	    return menu;
 	}
 	
+	public static String obtenerIpLocal() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface interfaz = interfaces.nextElement();
+                
+                if (interfaz.isLoopback() || !interfaz.isUp()) {
+                    continue;
+                }
+                
+                Enumeration<InetAddress> addresses = interfaz.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    
+                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
+                        String ip = addr.getHostAddress();
+                        
+                        // Priorizar direcciones de red local común
+                        if (ip.startsWith("192.168.") || 
+                            ip.startsWith("10.") || 
+                            ip.startsWith("172.")) {
+                            return ip;
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+	
 	public static void main(String [] args) throws IOException {
 		/* Crea el bot */
 		try {
@@ -107,42 +141,10 @@ public class Main implements ActionListener{
 		stdout.close();
 		
 		/* Obtiene las ip de wifi y cable */
-		String ipCable = "";
-		String ipWifi = "";
-		try {
-			Enumeration<NetworkInterface> nwi = NetworkInterface.getNetworkInterfaces();
-			while(nwi.hasMoreElements()) {
-				NetworkInterface interfaz = nwi.nextElement();
-				if(interfaz.isLoopback()) {
-					continue;
-				}
-				Enumeration<InetAddress> direccion = interfaz.getInetAddresses();
-				while(direccion.hasMoreElements()) {
-					InetAddress iaip = direccion.nextElement();
-					if(iaip instanceof Inet6Address) {
-						continue;
-					}
-					if(interfaz.getName().startsWith("eth")) {
-						ipCable = "Cable: " + iaip.getHostAddress();
-					}else if(interfaz.getName().startsWith("wlan")) {
-						ipWifi = "Wifi: " + iaip.getHostAddress();
-					}
-				}
-			}
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+		String localIp = obtenerIpLocal();
 		
-		if(ipCable.equals("")) {
-			ipCable = "Sin conexion por cable";
-		}
-		
-		if(ipWifi.equals("")) {
-			ipWifi = "Sin conexion Wifi";
-		}
-		
-		String texto =  "<html><div style='text-align: center;'>&nbsp;&nbsp;&nbsp;&nbsp;Introduzca la IP en la app del movil.<br>" + ipCable + "<br>" + ipWifi + "<br>NO CIERRE esta ventana mientras usa la app</div></html>";
-		String texto2 = "Direccion IP cable: " + ipCable + "\nDireccio IP wifi: " + ipWifi;
+		String texto =  "<html><div style='text-align: center;'>&nbsp;&nbsp;&nbsp;&nbsp;Introduzca la IP en la app del movil.<br>" + localIp + "<br>NO CIERRE esta ventana mientras usa la app</div></html>";
+		String texto2 = "Direccion IP: " + localIp;
 		
 		notificacion(texto, texto2);
 		

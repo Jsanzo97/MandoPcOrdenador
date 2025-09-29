@@ -44,7 +44,7 @@ public class Main implements ActionListener{
 	 * @param s2 cadena de texto 2 para mostrar en el menu pop up
 	 */
 	public static void notificacion(String s1, String s2) {
-		Image img = Toolkit.getDefaultToolkit().getImage("Resources/logoNotificacion.png");
+		Image img = Toolkit.getDefaultToolkit().getImage("Resources/test.png");
 		PopupMenu pm = crearMenu();
 		
 		TrayIcon icono = new TrayIcon(img, s2, pm);

@@ -66,7 +66,7 @@ public class ControlTeclado {
 	        case 'l': teclear(VK_L, false, false, bot); break;
 	        case 'm': teclear(VK_M, false, false, bot); break;
 	        case 'n': teclear(VK_N, false, false, bot); break;
-	        case 'ñ': teclear(192, false, false, bot); break;
+	        case 'Ã±': teclear(192, false, false, bot); break;
 	        case 'o': teclear(VK_O, false, false, bot); break;
 	        case 'p': teclear(VK_P, false, false, bot); break;
 	        case 'q': teclear(VK_Q, false, false, bot); break;
@@ -94,7 +94,7 @@ public class ControlTeclado {
 	        case 'L': teclear(VK_L, true, false, bot); break;
 	        case 'M': teclear(VK_M, true, false, bot); break;
 	        case 'N': teclear(VK_N, true, false, bot); break;
-	        case 'Ñ': teclear(192, true, false, bot); break;
+	        case 'Ã‘': teclear(192, true, false, bot); break;
 	        case 'O': teclear(VK_O, true, false, bot); break;
 	        case 'P': teclear(VK_P, true, false, bot); break;
 	        case 'Q': teclear(VK_Q, true, false, bot); break;
@@ -120,7 +120,7 @@ public class ControlTeclado {
 	        case '@': teclear(VK_2, false, true, bot); break;
 	        
 	        case '3': teclear(VK_3, false, false, bot); break;
-	        case '·': teclear(VK_3, true, false, bot); break; //Existe en android??
+	        case 'Â·': teclear(VK_3, true, false, bot); break; //Existe en android??
 	        case '#': teclear(VK_3, false, true, bot); break;
 	        
 	        case '4': teclear(VK_4, false, false, bot); break;
@@ -128,12 +128,12 @@ public class ControlTeclado {
 	        case '~': teclear(VK_4, false, true, bot); break;
 	        
 	        case '5': teclear(VK_5, false, false, bot); break;
-	        case '%': teclear(VK_5, true, false, bot); break;
-	        case '€': teclear(VK_5, false, true, bot); break;
+	        case 'â‚¬': teclear(VK_5, true, false, bot); break;
+	        case '%': teclear(VK_5, false, true, bot); break;
 	        
 	        case '6': teclear(VK_6, false, false, bot); break;
 	        case '&': teclear(VK_6, true, false, bot); break;
-	        case '¬': teclear(VK_6, false, true, bot); break;
+	        case 'Â¬': teclear(VK_6, false, true, bot); break;
 	        
 	        case '7': teclear(VK_7, false, false, bot); break;
 	        case '/': teclear(VK_7, true, false, bot); break;
@@ -169,11 +169,12 @@ public class ControlTeclado {
 	        case '^': teclear(128, true, false, bot); break;
 	        case '[': teclear(128, false, true, bot); break;
 	        
-	        case '´': teclear(129, false, true, bot); break;
-	        case '¨': teclear(129, true, false, bot); break;
+	        case 'Â´': teclear(129, false, true, bot); break;
+	        case 'Â¨': teclear(129, true, false, bot); break;
 	        case '{': teclear(129, false, true, bot); break;
 	        
-	        case 'ç': teclear(0, false, false, bot); break;
+	        case 'Ã§': teclear(0, false, false, bot); break;
+	        case 'Ã‡': teclear(0, false, false, bot); break;
 	        case '}': teclear(0, false, true, bot); break;
 	        
 	        default: break;

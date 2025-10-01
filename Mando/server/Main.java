@@ -156,53 +156,74 @@ public class Main implements ActionListener{
 		notificacion(texto, texto2);
 		
 		boolean activo = true;
-		Socket client;
-		BufferedReader r;
-		String line;
-		
+
 		try {
-			server = new ServerSocket(7070);
-			server.setPerformancePreferences(0, 1, 2);
-			
-			while(activo) {
+		    server = new ServerSocket(7070);
+		    server.setPerformancePreferences(0, 1, 2);
+		    
+		    while(activo) {
 		        System.out.println("Waiting for client...");
-		        client = server.accept();
-		        System.out.println("Client connected!");
 		        
-		        client.setTcpNoDelay(true);  
-		        client.setKeepAlive(true);    
-		        client.setSendBufferSize(8192);
-		        client.setReceiveBufferSize(8192);
+		        Socket client = null;
+		        BufferedReader r = null;
 		        
-		        r = new BufferedReader(new InputStreamReader(client.getInputStream()));
-		        
-		        while((line = r.readLine()) != null) {
-		            System.out.println("Input: " + line);
+		        try {
+		            client = server.accept();
+		            System.out.println("Client connected: " + client.getInetAddress());
 		            
-		            String input = line; // Capture for thread
+		            client.setTcpNoDelay(true);
+		            client.setKeepAlive(true);
+		            client.setSendBufferSize(8192);
+		            client.setReceiveBufferSize(8192);
 		            
-		            // For time-critical commands, execute immediately
-		            if(input.equals("SubirVol") || input.equals("BajarVol") ||
-		            		input.equals("ClickarI") || input.equals("ClickarD")) {
-		                processCommand(input);
-		            } 
-		            // For high-frequency commands (mouse movement), execute async
-		            else if(input.startsWith("Mov") || input.startsWith("Scroll")) {
-		                // Execute in separate thread to not block reading
-		                new Thread(() -> processCommand(input)).start();
+		            r = new BufferedReader(new InputStreamReader(client.getInputStream()));
+		            
+		            String line;
+
+		            while((line = r.readLine()) != null) {
+		                System.out.println("Input: " + line);
+		                String command = line;
+		                
+		                if(command.equals("SubirVol") || command.equals("BajarVol") ||
+		                   command.equals("ClickarI") || command.equals("ClickarD")) {
+		                    processCommand(command);
+		                } 
+
+		                else if(command.startsWith("Mov") || command.startsWith("Scroll")) {
+		                    new Thread(() -> processCommand(command)).start();
+		                }
+		                else {
+		                    processCommand(command);
+		                }
 		            }
-		            else {
-		                processCommand(input);
+		            
+		            System.out.println("Client disconnected");
+		            
+		        } catch (IOException e) {
+		            System.out.println("Client connection error: " + e.getMessage());
+		        } finally {
+		            try {
+		                if (r != null) r.close();
+		                if (client != null) client.close();
+		            } catch (IOException e) {
+		            	System.err.println(e);
 		            }
 		        }
 		        
-		        System.out.println("Client disconnected");
-		        client.close();
+		        System.out.println("Ready for new connection...");
 		    }
+		    
 		} catch (BindException e) {
+		    System.out.println("Port 7070 already in use");
 		    System.exit(0);
 		} catch (Exception err) {
 		    err.printStackTrace();
+		} finally {
+		    try {
+		        if (server != null) server.close();
+		    } catch (IOException e) {
+		    	System.err.println(e);
+		    }
 		}
 	}
 	

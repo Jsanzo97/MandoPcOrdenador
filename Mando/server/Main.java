@@ -18,16 +18,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.BindException;
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
-
 import javax.swing.JOptionPane;
-
 import raton.ControlRaton;
 import teclado.ControlTeclado;
 import volumenYbrillo.ControlBrillo;
@@ -128,15 +125,25 @@ public class Main implements ActionListener{
 		}
 		
 		/* Obtiene el brillo inicial */
-		String command = "powershell.exe  Get-Ciminstance -Namespace root/WMI -ClassName WmiMonitorBrightness";
-		Process powerShellProcess = Runtime.getRuntime().exec(command);
+		ProcessBuilder processBuilder = new ProcessBuilder(
+			    "powershell.exe", 
+			    "Get-CimInstance", 
+			    "-Namespace", "root/WMI", 
+			    "-ClassName", "WmiMonitorBrightness"
+			);
+		
+		Process powerShellProcess = processBuilder.start();
 		powerShellProcess.getOutputStream().close();
+
 		String linea;
-		BufferedReader stdout = new BufferedReader(new InputStreamReader(powerShellProcess.getInputStream()));
+		BufferedReader stdout = new BufferedReader(
+		    new InputStreamReader(powerShellProcess.getInputStream())
+		);
+
 		while ((linea = stdout.readLine()) != null) {
-			if(linea.startsWith("Current")) {
-				ControlBrillo.brilloActual = Integer.parseInt(linea.substring(20));
-			}
+		    if(linea.startsWith("Current")) {
+		        ControlBrillo.brilloActual = Integer.parseInt(linea.substring(20));
+		    }
 		}
 		stdout.close();
 		
@@ -155,45 +162,74 @@ public class Main implements ActionListener{
 		
 		try {
 			server = new ServerSocket(7070);
+			server.setPerformancePreferences(0, 1, 2);
+			
 			while(activo) {
-				client = server.accept();
-				r = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				line = r.readLine();
-
-				if(line != null) {
-					if(line.equals("SubirVol")) {
-						ControlVolumen.subirVolumen();
-					}else if(line.equals("BajarVol")) {
-						ControlVolumen.bajarVolumen();
-					}else if(line.equals("ClickarI")) {
-						ControlRaton.clickarI(bot);
-					}else if(line.equals("ClickarD")) {
-						ControlRaton.clickarD(bot);
-					}else if(line.startsWith("Mov")) {
-						ControlRaton.mover(bot, line);
-					}else if(line.startsWith("Scroll")){
-						ControlRaton.scroll(bot, line);
-					}else if(line.startsWith("Tec")) {
-						ControlTeclado.escribir(bot, line.charAt(4));
-					}else if(line.startsWith("Enter")) {
-						ControlTeclado.enter(bot);
-					}else if(line.startsWith("Borrar")) {
-						ControlTeclado.borrar(bot);
-					}else if(line.startsWith("SubirBrillo")) {
-						ControlBrillo.subirBrillo();
-					}else if(line.startsWith("BajarBrillo")) {
-						ControlBrillo.bajarBrillo();
-					}
-				}else {
-					client.close();
-				}
-				client.close();
-			}
+		        System.out.println("Waiting for client...");
+		        client = server.accept();
+		        System.out.println("Client connected!");
+		        
+		        client.setTcpNoDelay(true);  
+		        client.setKeepAlive(true);    
+		        client.setSendBufferSize(8192);
+		        client.setReceiveBufferSize(8192);
+		        
+		        r = new BufferedReader(new InputStreamReader(client.getInputStream()));
+		        
+		        while((line = r.readLine()) != null) {
+		            System.out.println("Input: " + line);
+		            
+		            String input = line; // Capture for thread
+		            
+		            // For time-critical commands, execute immediately
+		            if(input.equals("SubirVol") || input.equals("BajarVol") ||
+		            		input.equals("ClickarI") || input.equals("ClickarD")) {
+		                processCommand(input);
+		            } 
+		            // For high-frequency commands (mouse movement), execute async
+		            else if(input.startsWith("Mov") || input.startsWith("Scroll")) {
+		                // Execute in separate thread to not block reading
+		                new Thread(() -> processCommand(input)).start();
+		            }
+		            else {
+		                processCommand(input);
+		            }
+		        }
+		        
+		        System.out.println("Client disconnected");
+		        client.close();
+		    }
 		} catch (BindException e) {
-			System.exit(0);
+		    System.exit(0);
 		} catch (Exception err) {
-			err.printStackTrace();
+		    err.printStackTrace();
 		}
+	}
+	
+	private static void processCommand(String line) {
+	    if(line.equals("SubirVol")) {
+	        ControlVolumen.subirVolumen();
+	    } else if(line.equals("BajarVol")) {
+	        ControlVolumen.bajarVolumen();
+	    } else if(line.equals("ClickarI")) {
+	        ControlRaton.clickarI(bot);
+	    } else if(line.equals("ClickarD")) {
+	        ControlRaton.clickarD(bot);
+	    } else if(line.startsWith("Mov")) {
+	        ControlRaton.mover(bot, line);
+	    } else if(line.startsWith("Scroll")) {
+	        ControlRaton.scroll(bot, line);
+	    } else if(line.startsWith("Tec")) {
+	        ControlTeclado.escribir(bot, line.charAt(4));
+	    } else if(line.startsWith("Enter")) {
+	        ControlTeclado.enter(bot);
+	    } else if(line.startsWith("Borrar")) {
+	        ControlTeclado.borrar(bot);
+	    } else if(line.startsWith("SubirBrillo")) {
+	        ControlBrillo.subirBrillo();
+	    } else if(line.startsWith("BajarBrillo")) {
+	        ControlBrillo.bajarBrillo();
+	    }
 	}
 
 	@Override

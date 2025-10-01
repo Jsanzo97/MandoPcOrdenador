@@ -13,7 +13,7 @@ public class ControlBrillo {
 	 * Aumenta el brillo actual
 	 * @throws IOException
 	 */
-	public static void subirBrillo() throws IOException {
+	public static void subirBrillo() {
 		if(brilloActual < 100) {
 			brilloActual += 10;
 			cambio();
@@ -24,7 +24,7 @@ public class ControlBrillo {
 	 * Disminuye el brillo actual
 	 * @throws IOException
 	 */
-	public static void bajarBrillo() throws IOException {
+	public static void bajarBrillo() {
 		if(brilloActual > 0) {
 			brilloActual -= 10;
 			cambio();
@@ -35,13 +35,25 @@ public class ControlBrillo {
 	 * Cambia el brillo actual mediante comandos de powershell
 	 * @throws IOException
 	 */
-	private static void cambio() throws IOException {
-		String command = "powershell.exe "
-				+ "$delay = 5; "
-				+ "$brillo = " + brilloActual + "; "
-				+ "$myMonitor = Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods; "
-				+ "$myMonitor.wmisetbrightness($delay, $brillo)";
-		Process powerShellProcess = Runtime.getRuntime().exec(command);
-		powerShellProcess.getOutputStream().close();
+	private static void cambio() {
+		try {
+			String powershellScript = 
+				    "$delay = 5; " +
+				    "$brillo = " + brilloActual + "; " +
+				    "$myMonitor = Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods; " +
+				    "$myMonitor.wmisetbrightness($delay, $brillo)";
+
+				ProcessBuilder processBuilder = new ProcessBuilder(
+				    "powershell.exe",
+				    "-Command",
+				    powershellScript
+				);
+
+				Process powerShellProcess = processBuilder.start();
+				powerShellProcess.getOutputStream().close();
+		} catch (IOException exception) {
+			System.err.println(exception);
+		}
+		
 	}
 }

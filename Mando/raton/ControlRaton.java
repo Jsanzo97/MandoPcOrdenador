@@ -59,7 +59,11 @@ public class ControlRaton{
 			despY = Integer.parseInt(coordenadas[1]);
 						
 			try {
-				bot.mouseMove(origenX + despX, origenY + despY);
+				// Move to new position
+	            int newX = origenX + despX;
+	            int newY = origenY + despY;
+	            
+	            bot.mouseMove(newX, newY);
 			}catch(Exception ex) {
 				ex.printStackTrace();
 			}
